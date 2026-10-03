@@ -1,0 +1,5 @@
+[plugins]
+modules = ["custom_project.components"]
+[model]
+name = "project_classifier"
+input_dim = 16

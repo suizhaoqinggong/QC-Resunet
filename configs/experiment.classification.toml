@@ -1,0 +1,33 @@
+[experiment]
+name = "example-classification"
+seed = 42
+threshold = 0.5
+class_names = ["A", "B", "C"]
+[data]
+adapter = "dummy"
+num_samples = 64
+input_dim = 16
+batch_size = 8
+num_workers = 0
+val_ratio = 0.2
+test_ratio = 0.2
+[task]
+name = "classification"
+loss = "bce"
+[optimizer]
+name = "adam"
+lr = 0.001
+[trainer]
+epochs = 2
+patience = 2
+device = "cpu"
+amp = false
+grad_clip_norm = 1.0
+[metrics.params.accuracy]
+[metrics.params.precision_recall_f1]
+average = "micro"
+[checkpoint]
+monitor = "val_loss"
+mode = "min"
+[output]
+root_dir = "runs"

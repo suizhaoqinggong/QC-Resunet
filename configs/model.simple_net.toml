@@ -1,0 +1,5 @@
+[model]
+name = "simple_net"
+input_dim = 16
+hidden_dim = 16
+dropout = 0.1

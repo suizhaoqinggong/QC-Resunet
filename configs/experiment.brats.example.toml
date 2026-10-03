@@ -1,0 +1,38 @@
+# Requires uv sync --extra brats. Set paths to your own dataset.
+[experiment]
+name = "brats-segmentation"
+seed = 42
+class_names = ["background", "NCR_NET", "ED", "ET"]
+[data]
+adapter = "brats"
+root_dir = "data/brats"
+preprocessed_dir = "data/brats"
+use_preprocessed = true
+data_format = "npy"
+augment_train = true
+crop_size = [32, 32, 32]
+# train_ids_file = "data/splits/train.txt"
+# val_ids_file = "data/splits/val.txt"
+# test_ids_file = "data/splits/test.txt"
+batch_size = 2
+num_workers = 0
+val_ratio = 0.2
+test_ratio = 0.2
+[task]
+name = "segmentation"
+loss = "dice_ce"
+[optimizer]
+name = "adam"
+lr = 0.001
+[trainer]
+epochs = 2
+patience = 2
+device = "auto"
+amp = false
+[metrics.params.brats_dice]
+# brats_hd measures maximum symmetric Hausdorff distance, not HD95.
+[checkpoint]
+monitor = "val_brats_dice_mean"
+mode = "max"
+[output]
+root_dir = "runs"

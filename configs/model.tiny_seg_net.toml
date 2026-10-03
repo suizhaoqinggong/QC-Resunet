@@ -1,0 +1,4 @@
+[model]
+name = "tiny_seg_net"
+num_modalities = 4
+hidden_dim = 8

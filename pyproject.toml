@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "training-framework"
+version = "0.1.0"
+description = "An independent, registry-driven PyTorch training framework"
+readme = "README.md"
+requires-python = ">=3.9,<3.14"
+dependencies = ["torch>=2.3,<3", "numpy>=1.24,<3", "tensorboard>=2.14,<3", "tomli>=2,<3", "tomli-w>=1,<2", "packaging>=23"]
+
+[project.optional-dependencies]
+brats = ["nibabel>=5,<6", "scipy>=1.10,<2"]
+dev = ["pytest>=7,<9", "ruff>=0.6", "mypy>=1.10"]
+
+[project.scripts]
+training-framework = "training_framework.cli.main:main"
+training-tensorboard = "training_framework.cli.tensorboard_compat:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["training_framework*"]
+
+[tool.setuptools.package-data]
+training_framework = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.9"
+mypy_path = "src"
+explicit_package_bases = true
+warn_unused_configs = true
+ignore_missing_imports = true
