@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import torch
 from torch import nn
@@ -43,6 +43,7 @@ class TrainerSettings:
     lr_scheduler_factor: float = 0.5
     lr_scheduler_patience: int = 10
     lr_scheduler_power: float = 0.9
+    lr_scheduler_min_lr: float = 0.0
 
 
 class Trainer:
@@ -102,6 +103,8 @@ class Trainer:
 
         self._scheduler: torch.optim.lr_scheduler.LambdaLR | torch.optim.lr_scheduler.ReduceLROnPlateau | None = None
         if settings.lr_scheduler:
+            if settings.lr_scheduler_min_lr < 0:
+                raise ValueError("lr_scheduler_min_lr must be nonnegative")
             if settings.lr_scheduler_type == "poly":
                 max_epoch = settings.epochs
                 power = settings.lr_scheduler_power
@@ -110,7 +113,23 @@ class Trainer:
                     return (1 - (epoch - 1) / max_epoch) ** power
 
                 self._scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=poly_lr_lambda)
-            else:
+            elif settings.lr_scheduler_type == "exponential":
+                if not 0 < settings.lr_scheduler_factor <= 1:
+                    raise ValueError("Exponential scheduler factor must be in (0,1]")
+                minimum = settings.lr_scheduler_min_lr
+                factor = settings.lr_scheduler_factor
+
+                def make_schedule(initial: float) -> Callable[[int], float]:
+                    def schedule(epoch: int) -> float:
+                        return max(factor**epoch, minimum / initial)
+
+                    return schedule
+
+                schedules = [make_schedule(group["lr"]) for group in optimizer.param_groups]
+                if any(group["lr"] <= 0 or group["lr"] < minimum for group in optimizer.param_groups):
+                    raise ValueError("Initial learning rates must be positive and at least the scheduler minimum")
+                self._scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=schedules)
+            elif settings.lr_scheduler_type == "reduce_on_plateau":
                 mode = checkpoint_manager.mode
                 self._scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                     optimizer,
@@ -118,6 +137,8 @@ class Trainer:
                     factor=settings.lr_scheduler_factor,
                     patience=settings.lr_scheduler_patience,
                 )
+            else:
+                raise ValueError(f"Unknown lr_scheduler_type: {settings.lr_scheduler_type}")
 
         self._best_val_metrics: MetricResults = {}
         self._start_epoch = 1
@@ -215,6 +236,9 @@ class Trainer:
         metrics_log_path = self.run_dir / "metrics.jsonl"
 
         for epoch in range(self._start_epoch, self.settings.epochs + 1):
+            dataset = getattr(self.train_loader, "dataset", None)
+            if dataset is not None and hasattr(dataset, "set_epoch"):
+                dataset.set_epoch(epoch - 1)
             sampler = getattr(self.train_loader, "sampler", None)
             if sampler is not None and hasattr(sampler, "set_epoch"):
                 sampler.set_epoch(epoch)

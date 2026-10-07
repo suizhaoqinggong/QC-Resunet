@@ -119,6 +119,7 @@ def build_trainer(
         lr_scheduler_factor=float(trainer_section.get("lr_scheduler_factor", 0.5)),
         lr_scheduler_patience=int(trainer_section.get("lr_scheduler_patience", 10)),
         lr_scheduler_power=float(trainer_section.get("lr_scheduler_power", 0.9)),
+        lr_scheduler_min_lr=float(trainer_section.get("lr_scheduler_min_lr", 0.0)),
     )
 
     # Checkpoint manager
