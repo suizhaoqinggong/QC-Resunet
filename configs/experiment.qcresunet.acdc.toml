@@ -1,0 +1,38 @@
+[experiment]
+name = "qcresunet-acdc-fold0"
+seed = 42
+class_names = ["LV", "Myo", "RV"]
+[data]
+adapter = "qc_manifest"
+manifest = "data/qc/acdc-fold0/manifest.json"
+modalities = 1
+regions = [[3], [2], [1]]
+tolerance_mm = 1.0
+augment_train = true
+balance_train = true
+balance_eval = true
+batch_size = 4
+num_workers = 4
+pin_memory = true
+[task]
+name = "segmentation_qc"
+balance = 1.0
+[optimizer]
+name = "adam"
+lr = 0.00021
+weight_decay = 0.0001
+[trainer]
+epochs = 100
+patience = 100
+device = "cuda"
+amp = true
+lr_scheduler = true
+lr_scheduler_type = "exponential"
+lr_scheduler_factor = 0.9
+lr_scheduler_min_lr = 0.000001
+[metrics.params.qc]
+[checkpoint]
+monitor = "val_qc_mae"
+mode = "min"
+[output]
+root_dir = "runs"

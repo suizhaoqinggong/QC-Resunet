@@ -1,0 +1,8 @@
+[plugins]
+modules = ["training_framework.plugins.qcresunet.components"]
+[model]
+name = "qcresunet"
+modalities = 4
+base_channels = 2
+blocks = [1, 1, 1, 1]
+dropout = 0.0

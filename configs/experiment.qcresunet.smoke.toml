@@ -1,0 +1,32 @@
+[experiment]
+name = "qcresunet-smoke"
+seed = 42
+class_names = ["WT", "TC", "ET"]
+[data]
+adapter = "qc_synthetic"
+shape = [32, 32, 64]
+split_sizes = [4, 2, 2]
+batch_size = 2
+num_workers = 0
+[task]
+name = "segmentation_qc"
+balance = 1.0
+[optimizer]
+name = "adam"
+lr = 0.00021
+weight_decay = 0.0001
+[trainer]
+epochs = 2
+patience = 2
+device = "cpu"
+amp = false
+lr_scheduler = true
+lr_scheduler_type = "exponential"
+lr_scheduler_factor = 0.9
+lr_scheduler_min_lr = 0.000001
+[metrics.params.qc]
+[checkpoint]
+monitor = "val_qc_mae"
+mode = "min"
+[output]
+root_dir = "runs"

@@ -1,0 +1,42 @@
+# See docs/qcresunet.md for preparation and the complete experimental protocol.
+[experiment]
+name = "qcresunet-brats-fold0"
+seed = 42
+class_names = ["WT", "TC", "ET"]
+[data]
+adapter = "qc_manifest"
+manifest = "data/qc/fold0/manifest.json"
+modalities = 4
+regions = [[1, 2, 3], [1, 3], [3]]
+# The PDF does not give the NSD tolerance. Match preparation and report it.
+tolerance_mm = 1.0
+augment_train = true
+balance_train = true
+balance_eval = true
+bins = 10
+batch_size = 4
+num_workers = 4
+pin_memory = true
+drop_last = false
+[task]
+name = "segmentation_qc"
+balance = 1.0
+[optimizer]
+name = "adam"
+lr = 0.00021
+weight_decay = 0.0001
+[trainer]
+epochs = 100
+patience = 100
+device = "cuda"
+amp = true
+lr_scheduler = true
+lr_scheduler_type = "exponential"
+lr_scheduler_factor = 0.9
+lr_scheduler_min_lr = 0.000001
+[metrics.params.qc]
+[checkpoint]
+monitor = "val_qc_mae"
+mode = "min"
+[output]
+root_dir = "runs"
